@@ -134,6 +134,12 @@ void UEUW_Parent::LoadImagesToArray()
 
 UTexture2D* UEUW_Parent::ShowNextImage()
 {
+    if (!SelectedStaticMeshComponent && !SkyboxMaterialInstanceDynamic)
+    {
+        UE_LOG(LogTemp, Log, TEXT("UEUW_Parent::ShowNextImage: The SelectedStaticMeshComponent or/and SkyboxMaterialInstanceDynamic is null."));
+        return nullptr;
+    }
+
     if (SkyboxImagesLength == 0 && CurrentImageIndex < 0)
     {
         UE_LOG(LogTemp, Log,
@@ -161,6 +167,7 @@ UTexture2D* UEUW_Parent::ShowNextImage()
 
         CurrentImageIndex++;
         UTexture2D* TextureToShow = SkyboxImages[CurrentImageIndex];
+        SkyboxMaterialInstanceDynamic->SetTextureParameterValue("MainTexture", TextureToShow);
         
         UE_LOG(LogTemp, Log,
         TEXT("UEUW_Parent::ShowNextImage: - else - CurrentImageIndex: `%d`."),
@@ -172,6 +179,12 @@ UTexture2D* UEUW_Parent::ShowNextImage()
 
 UTexture2D* UEUW_Parent::ShowPreviousImage()
 {
+    if (!SelectedStaticMeshComponent && !SkyboxMaterialInstanceDynamic)
+    {
+        UE_LOG(LogTemp, Log, TEXT("UEUW_Parent::ShowPreviousImage: The SelectedStaticMeshComponent or/and SkyboxMaterialInstanceDynamic is null."));
+        return nullptr;
+    }
+
     if (SkyboxImagesLength == 0 && CurrentImageIndex < 0)
     {
         UE_LOG(LogTemp, Log,
@@ -186,6 +199,7 @@ UTexture2D* UEUW_Parent::ShowPreviousImage()
     {
         CurrentImageIndex--;
         UTexture2D* TextureToShow = SkyboxImages[CurrentImageIndex];
+        SkyboxMaterialInstanceDynamic->SetTextureParameterValue("MainTexture", TextureToShow);
         
         UE_LOG(LogTemp, Log,
         TEXT("UEUW_Parent::ShowPreviousImage: - if - CurrentImageIndex: `%d`."),
@@ -197,6 +211,7 @@ UTexture2D* UEUW_Parent::ShowPreviousImage()
     {
         CurrentImageIndex = SkyboxImagesLength - 1;
         UTexture2D* TextureToShow = SkyboxImages[CurrentImageIndex];
+        SkyboxMaterialInstanceDynamic->SetTextureParameterValue("MainTexture", TextureToShow);
         
         UE_LOG(LogTemp, Log,
         TEXT("UEUW_Parent::ShowPreviousImage: - else - CurrentImageIndex: `%d`."),
@@ -241,7 +256,6 @@ void UEUW_Parent::AccessMaterialInstances()
     {
         // Define the path to the material instance
         FString MaterialPath = TEXT("/Game/Level/Sky/MI_SkyDome.MI_SkyDome");
-        UMaterial* MasterMaterial = LoadObject<UMaterial>(nullptr, *MaterialPath);
         SkyboxMaterialInstance = LoadObject<UMaterialInstance>(nullptr, *MaterialPath);
         SkyboxMaterialInstanceDynamic = UMaterialInstanceDynamic::Create(SkyboxMaterialInstance, SelectedStaticMeshComponent);
 
@@ -254,6 +268,89 @@ void UEUW_Parent::AccessMaterialInstances()
         UE_LOG(LogTemp, Log, TEXT("UEUW_Parent::AccessMaterialInstances: SelectedStaticMeshComponent is not null."));
     }
 }
+
+void UEUW_Parent::FresnelExponentParameterControl(float Value)
+{
+    if (SelectedStaticMeshComponent && SkyboxMaterialInstanceDynamic)
+    {
+        SkyboxMaterialInstanceDynamic->SetScalarParameterValue("Exponent", Value);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("UEUW_Parent::FresnelExponentParameterControl: The SelectedStaticMeshComponent or/and SkyboxMaterialInstanceDynamic is null."));
+        return;
+    }
+}
+
+void UEUW_Parent::IntensityParameterControl(float Value)
+{
+    if (SelectedStaticMeshComponent && SkyboxMaterialInstanceDynamic)
+    {
+        SkyboxMaterialInstanceDynamic->SetScalarParameterValue("Intensity", Value);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("UEUW_Parent::IntensityParameterControl: The SelectedStaticMeshComponent or/and SkyboxMaterialInstanceDynamic is null."));
+        return;
+    }
+}
+
+void UEUW_Parent::PowerParameterControl(float Value)
+{
+    if (SelectedStaticMeshComponent && SkyboxMaterialInstanceDynamic)
+    {
+        SkyboxMaterialInstanceDynamic->SetScalarParameterValue("Power", Value);
+
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("UEUW_Parent::PowerParameterControl: The SelectedStaticMeshComponent or/and SkyboxMaterialInstanceDynamic is null."));
+        return;
+    }
+}
+
+void UEUW_Parent::PowerDefaultValue(float &Value)
+{
+    if (SelectedStaticMeshComponent && SkyboxMaterialInstanceDynamic)
+    {
+        FName ScalarParameterName = TEXT("Power");
+        SkyboxMaterialInstance->GetScalarParameterValue(ScalarParameterName, Value);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("UEUW_Parent::PowerDefaultValue: The SelectedStaticMeshComponent or/and SkyboxMaterialInstanceDynamic is null."));
+        return;
+    }
+}
+
+void UEUW_Parent::FresnelExponentDefaultValue(float &Value)
+{
+    if (SelectedStaticMeshComponent && SkyboxMaterialInstanceDynamic)
+    {
+        FName ScalarParameterName = TEXT("Exponent");
+        SkyboxMaterialInstance->GetScalarParameterValue(ScalarParameterName, Value);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("UEUW_Parent::PowerDefaultValue: The SelectedStaticMeshComponent or/and SkyboxMaterialInstanceDynamic is null."));
+        return;
+    }
+}
+
+void UEUW_Parent::IntensityDefaultValue(float &Value)
+{
+    if (SelectedStaticMeshComponent && SkyboxMaterialInstanceDynamic)
+    {
+        FName ScalarParameterName = TEXT("Intensity");
+        SkyboxMaterialInstance->GetScalarParameterValue(ScalarParameterName, Value);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("UEUW_Parent::PowerDefaultValue: The SelectedStaticMeshComponent or/and SkyboxMaterialInstanceDynamic is null."));
+        return;
+    }
+}
+
 // void UEUW_Parent::LoadImagesToArray_Constructor()
 // {
 //     FString SelectedFolder;
