@@ -7,7 +7,12 @@
 		{
 			"Name": "DigitalAd_Tree_Dev",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"CoreUObject",
+				"UMG",
+				"Blutility"
+			]
 		}
 	],
 	"Plugins": [

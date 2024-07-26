@@ -8,7 +8,22 @@ public class DigitalAd_Tree_Dev : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[] {
+		"Core",
+		"CoreUObject",
+		"Engine",
+		"InputCore",
+        "UnrealEd",           // For Editor Utilities
+        "Blutility",          // For Blueprint Utility Widgets
+        "UMG",                // For UMG (Unreal Motion Graphics)
+        "UMGEditor",          // For UMG Editor functionalities
+        "Slate",
+		"DesktopPlatform",              // For Slate UI
+        "SlateCore",          // For Slate UI
+        "EditorStyle",        // For Editor styling
+        "PropertyEditor",     // For Property Editor
+        "ToolMenus"           // For custom editor menus
+		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
