@@ -97,8 +97,21 @@ TArray<UTexture2D *> UEUW_Parent::LoadTexturesFromDirectory()
     {
         // Open Directory Picker Dialog
         FString FolderPath;
-        const void* ParentWindowHandle = nullptr; // Optionally set to your window handle
-        bool bOpened = DesktopPlatform->OpenDirectoryDialog(ParentWindowHandle, TEXT("Choose Image Directory"), TEXT(""), FolderPath);
+        // const void* ParentWindowHandle = nullptr; // Optionally set to your window handle
+        // bool bOpened = DesktopPlatform->OpenDirectoryDialog(ParentWindowHandle, TEXT("Choose Image Directory"), TEXT(""), FolderPath);
+
+        void* ParentWindowHandle = FSlateApplication::Get().GetActiveTopLevelWindow()->GetNativeWindow()->GetOSWindowHandle();
+        
+        // Set the default path if needed
+        FString DefaultPath = FPaths::ProjectDir();
+        
+        // Open the folder dialog
+        bool bOpened = DesktopPlatform->OpenDirectoryDialog(
+            ParentWindowHandle,
+            TEXT("Select a folder"),
+            DefaultPath,
+            FolderPath
+        );
 
         if (bOpened)
         {
@@ -134,7 +147,7 @@ void UEUW_Parent::LoadImagesToArray()
 
 UTexture2D* UEUW_Parent::ShowNextImage()
 {
-    if (!SelectedStaticMeshComponent && !SkyboxMaterialInstanceDynamic)
+    if (!SelectedStaticMeshComponent || !SkyboxMaterialInstanceDynamic)
     {
         UE_LOG(LogTemp, Log, TEXT("UEUW_Parent::ShowNextImage: The SelectedStaticMeshComponent or/and SkyboxMaterialInstanceDynamic is null."));
         return nullptr;
@@ -179,7 +192,7 @@ UTexture2D* UEUW_Parent::ShowNextImage()
 
 UTexture2D* UEUW_Parent::ShowPreviousImage()
 {
-    if (!SelectedStaticMeshComponent && !SkyboxMaterialInstanceDynamic)
+    if (!SelectedStaticMeshComponent || !SkyboxMaterialInstanceDynamic)
     {
         UE_LOG(LogTemp, Log, TEXT("UEUW_Parent::ShowPreviousImage: The SelectedStaticMeshComponent or/and SkyboxMaterialInstanceDynamic is null."));
         return nullptr;
