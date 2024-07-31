@@ -234,7 +234,6 @@ UTexture2D* UEUW_Parent::ShowPreviousImage()
     }
 }
 
-
 void UEUW_Parent::PickStaticMeshFromLevel(FString &ActorName)
 {
     // Clear previous selection

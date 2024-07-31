@@ -9,6 +9,9 @@ Build/
 *.ignore
 Content/Megascans
 Content/MSPresets
+Content/MS_Tropical
+Content/PN_tropicalGroundPlants
+Source/unrelated
 
 
 # Visual Studio 2015 user specific files
