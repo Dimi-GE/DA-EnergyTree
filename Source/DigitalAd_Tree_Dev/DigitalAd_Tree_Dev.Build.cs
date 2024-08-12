@@ -13,6 +13,7 @@ public class DigitalAd_Tree_Dev : ModuleRules
 		"CoreUObject",
 		"Engine",
 		"InputCore",
+		"BlueprintGraph",
         "UnrealEd",           // For Editor Utilities
         "Blutility",          // For Blueprint Utility Widgets
         "UMG",                // For UMG (Unreal Motion Graphics)
@@ -22,7 +23,8 @@ public class DigitalAd_Tree_Dev : ModuleRules
         "SlateCore",          // For Slate UI
         "EditorStyle",        // For Editor styling
         "PropertyEditor",     // For Property Editor
-        "ToolMenus"           // For custom editor menus
+        "ToolMenus",           // For custom editor menus
+		"MediaAssets"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
