@@ -27,44 +27,63 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RenderEditor")
-    FTransform CameraTransform;
+    // UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RenderEditor")
+    // FTransform CameraTransform;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RenderEditor")
+    UPROPERTY()
     AActor* CameraActor;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RenderEditor")
-	AActor* BuildingActor;
+	UPROPERTY(VisibleAnywhere)
+	AActor* Owner;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RenderEditor")
-	float Var = 0.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RenderEditor")
+	// UPROPERTY()
 	FVector StartPosition;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RenderEditor")
-	FVector EndPosition;
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RenderEditorTransforms")
+	int32 CurrentPositionIndex;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RenderEditor")
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RenderEditorTransforms")
+	int32 CurrentRenderOrder;
+
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RenderEditorTransforms")
+	int32 CameraPathLength;
+
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RenderEditor")
+	// FVector EndPosition;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RenderEditorTransforms")
 	FVector CurrentPosition;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RenderEditor")
-	float Distance;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RenderEditorTransforms")
+	TArray<FVector> CameraPath;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RenderEditorTransforms")
+	float Distance = 0;
+
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RenderEditor")
+	// float TargetDistance;
+
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RenderEditor")
+	// float StepSize = 0;
+	
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RenderEditor")
+	// float TargetIntensity = 0;
 
     // Timer handle for incrementing
     FTimerHandle IncrementTimerHandle;
+	FTimerHandle CurrentPositionTimerHandle;
 
-	UFUNCTION(CallInEditor, Category = "RenderEditor")
-	void StartIncrementing();
+	// UFUNCTION(CallInEditor, Category = "RenderEditorTransforms")
+	void TrackCurrentPosition_Timer();
 
-	UFUNCTION(CallInEditor, Category = "RenderEditor")
-	void IncreaseEmission();
+	// UFUNCTION(CallInEditor, Category = "RenderEditorTransforms")
+	void OwnerInit();
 
+
+	// UFUNCTION(CallInEditor, Category = "RenderEditorTransforms")
+	void RE_InvokeEmissionController();
+
+	void RE_CalculateDistance();
 	void PlayMedia();
-		
-	void CameraCurrentTransform();
-	void IncrementFloatValue();
 
-	void CalculateDistance_Timer();
-	void CalculateDistance();
 };

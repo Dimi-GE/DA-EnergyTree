@@ -19,70 +19,57 @@ void URenderEditorComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-    AActor* Owner = GetOwner();
-    if(Owner)
+    this->OwnerInit();
+    if (Owner)
     {
-        CameraActor = Owner;
-        EndPosition = FVector(1080.0f, 0.0f, 200.0f);
-        Distance = FVector::Dist(EndPosition, CameraActor->GetActorLocation());
-        this->CalculateDistance_Timer();
+        this->TrackCurrentPosition_Timer();
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("URenderEditorComponent::BeginPlay: The Owner is nullptr."));
+        return;
     }
 }
 
 void URenderEditorComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// this->CameraCurrentTransform();
 }
 
-void URenderEditorComponent::CameraCurrentTransform()
+void URenderEditorComponent::OwnerInit()
 {
-    if (CameraActor)
+    Owner = GetOwner();
+    if (Owner)
     {
-        CameraTransform = CameraActor->GetActorTransform();
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("CameraActor is not set"));
-    }
-}
-
-void URenderEditorComponent::StartIncrementing()
-{
-	GetWorld()->GetTimerManager().SetTimer(IncrementTimerHandle, this, &URenderEditorComponent::IncrementFloatValue, 1.0f, true);
-}
-
-void URenderEditorComponent::IncrementFloatValue()
-{
-    if (Var < 10.0f)
-    {
-        Var += 1.0f;
-		UE_LOG(LogTemp, Warning, TEXT("URenderEditorComponent::IncrementFloatValue: The Var is less then 10."));
-    }
-    else
-    {
-		Var = 0.0f;
-        GetWorld()->GetTimerManager().ClearTimer(IncrementTimerHandle);
+        CameraActor = Owner;
+        CameraPathLength = CameraPath.Num() - 1;
+        Distance = 11;
+        CurrentPositionIndex = 0;
+        CurrentRenderOrder = 0;
+        GetWorld()->GetTimerManager().ClearTimer(CurrentPositionTimerHandle);
     }
 }
 
-void URenderEditorComponent::CalculateDistance_Timer()
+void URenderEditorComponent::RE_InvokeEmissionController()
 {
-    GetWorld()->GetTimerManager().SetTimer(IncrementTimerHandle, this, &URenderEditorComponent::CalculateDistance, 0.01f, true);
-}
+    CurrentRenderOrder += 1;
+    // Find all actors in the world
+    TArray<AActor*> FoundActors;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), FoundActors);
 
-void URenderEditorComponent::CalculateDistance()
-{
-    if(CameraActor && Distance > 1000)
+    for (AActor* FoundActor : FoundActors)
     {
-        Distance = FVector::Dist(EndPosition, CameraActor->GetActorLocation());
-    }
-    else
-    {
-        this->PlayMedia();
-        this->IncreaseEmission();
-        GetWorld()->GetTimerManager().ClearTimer(IncrementTimerHandle);
+        // Find the specific component instance attached to the actor
+        UEmissionController* EmissionControllerComponent = FoundActor->FindComponentByClass<UEmissionController>();
+
+        if (EmissionControllerComponent)
+        {
+            if (EmissionControllerComponent->RenderOrder == CurrentRenderOrder)
+            {
+                EmissionControllerComponent->IncreaseEmissionParamDynamic();
+                UE_LOG(LogTemp, Log, TEXT("Found EmissionController component on actor `%s` with index `%d`"), *FoundActor->GetName(), EmissionControllerComponent->RenderOrder);
+            }
+        }
     }
 }
 
@@ -111,23 +98,45 @@ void URenderEditorComponent::PlayMedia()
     }
 }
 
-void URenderEditorComponent::IncreaseEmission()
+void URenderEditorComponent::TrackCurrentPosition_Timer()
 {
-    // Find all actors in the world
-    TArray<AActor*> FoundActors;
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), FoundActors);
-
-    for (AActor* FoundActor : FoundActors)
+    if(Owner == nullptr || CameraActor == nullptr)
     {
-        // Find the specific component instance attached to the actor
-        UEmissionController* EmissionControllerComponent = FoundActor->FindComponentByClass<UEmissionController>();
-        if (EmissionControllerComponent)
-        {
-            // Log the name of the component to verify it's found
-            UE_LOG(LogTemp, Log, TEXT("Found EmissionController component on actor: %s"), *FoundActor->GetName());
+        UE_LOG(LogTemp, Warning, TEXT("The WorldContext or CameraActor is nullptr - returning."));
+        GetWorld()->GetTimerManager().ClearTimer(CurrentPositionTimerHandle);
+        return;
+    }
 
-            // Directly call the Timer function on the component instance
-            EmissionControllerComponent->IncreaseStaticEmissionParam_Timer();
+    GetWorld()->GetTimerManager().SetTimer(CurrentPositionTimerHandle,
+    [this]()
+    {
+        if(Owner && Distance > 10)
+        {
+            CurrentPosition = CameraActor->GetActorLocation();
+            Distance = FVector::Dist(CurrentPosition, CameraPath[CurrentPositionIndex]);
         }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("URenderEditorComponent::TrackCurrentPosition_Timer: RE_ function launched."));
+            this->RE_CalculateDistance();
+            this->RE_InvokeEmissionController();
+        }  
+    },
+    0.01f, true);
+}
+
+void URenderEditorComponent::RE_CalculateDistance()
+{
+    if (CurrentPositionIndex < CameraPathLength)
+    {
+        CurrentPositionIndex += 1;
+        Distance = FVector::Dist(CurrentPosition, CameraPath[CurrentPositionIndex]);
+        this->TrackCurrentPosition_Timer();
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("URenderEditorComponent::CalculateDistance: The CurrentPositionIndex overflows CameraPathLength - returning."));
+        GetWorld()->GetTimerManager().ClearTimer(CurrentPositionTimerHandle);
+        return;
     }
 }

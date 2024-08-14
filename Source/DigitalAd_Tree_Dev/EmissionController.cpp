@@ -89,32 +89,41 @@ void UEmissionController::ResetDynamicMaterial()
 	GetWorld()->GetTimerManager().ClearTimer(StaticEmissionTimerHandle);
 }
 
-void UEmissionController::IncreaseStaticEmissionParam_Timer()
+void UEmissionController::IncreaseEmissionParamDynamic()
 {
-	GetWorld()->GetTimerManager().SetTimer(StaticEmissionTimerHandle, this, &UEmissionController::IncreaseStaticEmissionParam, 0.01f, true);
-}
-
-void UEmissionController::IncreaseStaticEmissionParam()
-{
-	if (!DynamicMaterialInstance)
+	UWorld* World = GetWorld();
+	if (!World)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UEmissionController::IncreaseStaticEmissionParam: DynamictMaterialInstance is nullptr - returning."));
-		GetWorld()->GetTimerManager().ClearTimer(StaticEmissionTimerHandle);
-		return;
+        UE_LOG(LogTemp, Error, TEXT("UEmissionController::IncreaseStaticEmissionParam_Timer: Invalid World context - returning."));
+        return;
 	}
+	World->GetTimerManager().ClearTimer(StaticEmissionTimerHandle);
 
-	if (StaticEmissionIntensity < 10)
-	{
-		StaticEmissionIntensity = StaticEmissionIntensity + 0.014f; //steps
-		DynamicMaterialInstance->SetScalarParameterValue(StaticEmissionParameterName, StaticEmissionIntensity);
+	// GetWorld()->GetTimerManager().SetTimer(StaticEmissionTimerHandle, this, &UEmissionController::IncreaseStaticEmissionParam, 0.01f, true);
+	GetWorld()->GetTimerManager().SetTimer(StaticEmissionTimerHandle,
+	[this]()
+	{ 
+		// Lambda Function --> //
+		if (!DynamicMaterialInstance)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UEmissionController::IncreaseStaticEmissionParam: DynamictMaterialInstance is nullptr - returning."));
+			GetWorld()->GetTimerManager().ClearTimer(StaticEmissionTimerHandle);
+			return;
+		}
 
-		UE_LOG(LogTemp, Log, TEXT("UEmissionController::IncreaseStaticEmissionParam: `%f`."), StaticEmissionIntensity);
-	}
-	else
-	{
-		GetWorld()->GetTimerManager().ClearTimer(StaticEmissionTimerHandle);
-		return;
-	}
+		if (StaticEmissionIntensity < ControllerTargetIntensity)
+		{
+			StaticEmissionIntensity += ControllerStepSize;
+			DynamicMaterialInstance->SetScalarParameterValue(StaticEmissionParameterName, StaticEmissionIntensity);
+		}
+		else
+		{
+			GetWorld()->GetTimerManager().ClearTimer(StaticEmissionTimerHandle);
+			return;
+		}
+		 // Lambda Function <-- //
+	},
+	0.01f, true);
 }
 
 void UEmissionController::OwnerInit()
@@ -122,12 +131,13 @@ void UEmissionController::OwnerInit()
 	Owner = this->GetOwner();
 	if (Owner)
 	{
-		OwnerName = Owner->GetName();
+		// OwnerName = Owner->GetName();
 		this->ApplyDynamicMaterial();
 	}
 	else
 	{
-		OwnerName = "nullptr";
+		// OwnerName = "nullptr";
 		UE_LOG(LogTemp, Warning, TEXT("UEmissionController::OwnerInit: Actor is nullptr - returning."));
+		return;
 	}
 }
