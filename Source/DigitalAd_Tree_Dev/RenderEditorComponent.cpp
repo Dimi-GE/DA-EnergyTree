@@ -4,9 +4,10 @@
 #include "RenderEditorComponent.h"
 #include "Engine/Engine.h"
 
+#include "ContentViewer.h"
 #include "EmissionController.h"
 #include "Kismet/GameplayStatics.h"
-#include "ParentActor.h"
+// #include "ParentActor.h"
 
 URenderEditorComponent::URenderEditorComponent()
 {
@@ -20,6 +21,7 @@ void URenderEditorComponent::BeginPlay()
 	Super::BeginPlay();
 
     this->OwnerInit();
+    this->ContentViewerActorInit();
     if (Owner)
     {
         this->TrackCurrentPosition_Timer();
@@ -50,6 +52,24 @@ void URenderEditorComponent::OwnerInit()
     }
 }
 
+void URenderEditorComponent::ContentViewerActorInit()
+{
+    AContentViewer* ContentViewerActorRef = Cast<AContentViewer>(UGameplayStatics::GetActorOfClass(GetWorld(), AContentViewer::StaticClass()));
+
+    if (ContentViewerActorRef)
+    {
+        ContentViewerActor = ContentViewerActorRef;
+        ContentViewerActor->SetParentForSelf();
+        ContentViewerActor->SetActorRelativeLocation(FVector(150.f, 0.f, 0.f));
+        ContentViewerActor->SetActorRelativeRotation(FRotator(0.f, 180.f, 0.f));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("URenderEditorComponent::ContentViewerActorInit: The ContentViewerActor was not found - returning."));
+        return;
+    }
+}
+
 void URenderEditorComponent::RE_InvokeEmissionController()
 {
     CurrentRenderOrder += 1;
@@ -75,27 +95,27 @@ void URenderEditorComponent::RE_InvokeEmissionController()
 
 void URenderEditorComponent::PlayMedia()
 {
-    UClass* BlueprintClass = LoadObject<UClass>(nullptr, TEXT("/Game/Level/BlockoutElements/ParentActor.ParentActor_C"));
-    if (BlueprintClass)
-    {
-        TArray<AActor*> FoundActors;
-        UGameplayStatics::GetAllActorsOfClass(GetWorld(), BlueprintClass, FoundActors);
-        for(AActor* FoundActor : FoundActors)
-        {
-            AParentActor* ParentActorInstance = Cast<AParentActor>(FoundActor);
-            if (ParentActorInstance)
-            {
-                ParentActorInstance->SetUpMediaPlayers();
-                UE_LOG(LogTemp, Log, TEXT("The ParentActorInstance is found."));
-            }
-        }
+    // UClass* BlueprintClass = LoadObject<UClass>(nullptr, TEXT("/Game/Level/BlockoutElements/ParentActor.ParentActor_C"));
+    // if (BlueprintClass)
+    // {
+    //     TArray<AActor*> FoundActors;
+    //     UGameplayStatics::GetAllActorsOfClass(GetWorld(), BlueprintClass, FoundActors);
+    //     for(AActor* FoundActor : FoundActors)
+    //     {
+    //         AParentActor* ParentActorInstance = Cast<AParentActor>(FoundActor);
+    //         if (ParentActorInstance)
+    //         {
+    //             ParentActorInstance->SetUpMediaPlayers();
+    //             UE_LOG(LogTemp, Log, TEXT("The ParentActorInstance is found."));
+    //         }
+    //     }
 
-        UE_LOG(LogTemp, Log, TEXT("The ParentActor is found."));
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("The ParentActor is nullptr."));
-    }
+    //     UE_LOG(LogTemp, Log, TEXT("The ParentActor is found."));
+    // }
+    // else
+    // {
+    //     UE_LOG(LogTemp, Warning, TEXT("The ParentActor is nullptr."));
+    // }
 }
 
 void URenderEditorComponent::TrackCurrentPosition_Timer()

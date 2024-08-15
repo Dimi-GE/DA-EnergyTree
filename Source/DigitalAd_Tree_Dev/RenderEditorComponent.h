@@ -7,6 +7,7 @@
 #include "RenderEditorComponent.generated.h"
 
 class UEmissionController;
+class AContentViewer;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DIGITALAD_TREE_DEV_API URenderEditorComponent : public UActorComponent
@@ -33,8 +34,11 @@ public:
     UPROPERTY()
     AActor* CameraActor;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "RenderEditorDefaults")
 	AActor* Owner;
+
+	UPROPERTY(VisibleAnywhere, Category = "RenderEditorDefaults")
+	AContentViewer* ContentViewerActor;
 
 	// UPROPERTY()
 	FVector StartPosition;
@@ -78,6 +82,7 @@ public:
 
 	// UFUNCTION(CallInEditor, Category = "RenderEditorTransforms")
 	void OwnerInit();
+	void ContentViewerActorInit();
 
 
 	// UFUNCTION(CallInEditor, Category = "RenderEditorTransforms")

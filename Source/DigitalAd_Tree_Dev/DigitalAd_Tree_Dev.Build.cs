@@ -24,7 +24,8 @@ public class DigitalAd_Tree_Dev : ModuleRules
         "EditorStyle",        // For Editor styling
         "PropertyEditor",     // For Property Editor
         "ToolMenus",           // For custom editor menus
-		"MediaAssets"
+		"MediaAssets",
+		"CinematicCamera"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
