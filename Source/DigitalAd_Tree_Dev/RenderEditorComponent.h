@@ -52,6 +52,9 @@ public:
 	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RenderEditorTransforms")
 	int32 CameraPathLength;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TimerRender")
+	int32 TimerRenderCounter;
+
 	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RenderEditor")
 	// FVector EndPosition;
 
@@ -74,8 +77,8 @@ public:
 	// float TargetIntensity = 0;
 
     // Timer handle for incrementing
-    FTimerHandle IncrementTimerHandle;
 	FTimerHandle CurrentPositionTimerHandle;
+	FTimerHandle ManualTimerHandle;
 
 	// UFUNCTION(CallInEditor, Category = "RenderEditorTransforms")
 	void TrackCurrentPosition_Timer();
@@ -91,4 +94,8 @@ public:
 	void RE_CalculateDistance();
 	void PlayMedia();
 
+	UFUNCTION(CallInEditor, Category = "TimerRender")
+	void StartCountdown();
+
+	void InvokeEmissionControllerAtTime();
 };

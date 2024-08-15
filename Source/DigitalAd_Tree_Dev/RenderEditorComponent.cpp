@@ -24,7 +24,8 @@ void URenderEditorComponent::BeginPlay()
     this->ContentViewerActorInit();
     if (Owner)
     {
-        this->TrackCurrentPosition_Timer();
+        // this->TrackCurrentPosition_Timer();
+        this->StartCountdown();
     }
     else
     {
@@ -48,7 +49,9 @@ void URenderEditorComponent::OwnerInit()
         Distance = 11;
         CurrentPositionIndex = 0;
         CurrentRenderOrder = 0;
+        TimerRenderCounter = 0;
         GetWorld()->GetTimerManager().ClearTimer(CurrentPositionTimerHandle);
+        GetWorld()->GetTimerManager().ClearTimer(ManualTimerHandle);
     }
 }
 
@@ -116,6 +119,49 @@ void URenderEditorComponent::PlayMedia()
     // {
     //     UE_LOG(LogTemp, Warning, TEXT("The ParentActor is nullptr."));
     // }
+}
+
+void URenderEditorComponent::StartCountdown()
+{
+    GetWorld()->GetTimerManager().SetTimer(ManualTimerHandle,
+    [this]()
+    {
+        if (TimerRenderCounter < 15)
+        {
+            TimerRenderCounter += 1;
+            this->InvokeEmissionControllerAtTime();
+            UE_LOG(LogTemp, Log, TEXT("URenderEditorComponent::StartCountdown: `%i`."), TimerRenderCounter);
+        }
+        else
+        {
+            TimerRenderCounter = 0;
+            GetWorld()->GetTimerManager().ClearTimer(ManualTimerHandle);
+            return;
+        }
+
+    },
+    1.0f, true);
+}
+
+void URenderEditorComponent::InvokeEmissionControllerAtTime()
+{
+    TArray<AActor*> FoundActors;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), FoundActors);
+
+    for (AActor* FoundActor : FoundActors)
+    {
+        // Find the specific component instance attached to the actor
+        UEmissionController* EmissionControllerComponent = FoundActor->FindComponentByClass<UEmissionController>();
+
+        if (EmissionControllerComponent)
+        {
+            if (EmissionControllerComponent->RenderAtSecond == TimerRenderCounter)
+            {
+                EmissionControllerComponent->IncreaseEmissionParamDynamic();
+                UE_LOG(LogTemp, Log, TEXT("Found EmissionController component on actor `%s` with RenderAtSecond `%d`"), *FoundActor->GetName(), EmissionControllerComponent->RenderAtSecond);
+            }
+        }
+    }
 }
 
 void URenderEditorComponent::TrackCurrentPosition_Timer()

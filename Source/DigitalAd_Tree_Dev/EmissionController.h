@@ -27,6 +27,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Emission Controller Defaults")
 	int32 RenderOrder;
 
+	UPROPERTY(EditAnywhere, Category = "Emission Controller Defaults")
+	int32 RenderAtSecond;
+
 	// Functions
 	UFUNCTION(CallinEditor, Category = "Dynamic Emission Control")
 	void ApplyDynamicMaterial();
