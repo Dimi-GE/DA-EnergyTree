@@ -7,6 +7,7 @@
 #include "RenderEditorComponent.generated.h"
 
 class UEmissionController;
+class UMediaController;
 class AContentViewer;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -92,7 +93,7 @@ public:
 	void RE_InvokeEmissionController();
 
 	void RE_CalculateDistance();
-	void PlayMedia();
+	void InvokeMediaControllerAtTime();
 
 	UFUNCTION(CallInEditor, Category = "TimerRender")
 	void StartCountdown();

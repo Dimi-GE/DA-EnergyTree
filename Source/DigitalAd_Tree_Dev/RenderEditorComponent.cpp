@@ -6,6 +6,7 @@
 
 #include "ContentViewer.h"
 #include "EmissionController.h"
+#include "MediaController.h"
 #include "Kismet/GameplayStatics.h"
 // #include "ParentActor.h"
 
@@ -96,8 +97,26 @@ void URenderEditorComponent::RE_InvokeEmissionController()
     }
 }
 
-void URenderEditorComponent::PlayMedia()
+void URenderEditorComponent::InvokeMediaControllerAtTime()
 {
+
+    TArray<AActor*> FoundActors;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), FoundActors);
+
+    for (AActor* FoundActor : FoundActors)
+    {
+        // Find the specific component instance attached to the actor
+        UMediaController* MediaControllerComponent = FoundActor->FindComponentByClass<UMediaController>();
+
+        if (MediaControllerComponent)
+        {
+            if (MediaControllerComponent->RenderAtSecond == TimerRenderCounter)
+            {
+                MediaControllerComponent->PlayPreparedMedia();
+                UE_LOG(LogTemp, Log, TEXT("Found MediaController component on actor `%s` with RenderAtSecond `%d`"), *FoundActor->GetName(), MediaControllerComponent->RenderAtSecond);
+            }
+        }
+    }
     // UClass* BlueprintClass = LoadObject<UClass>(nullptr, TEXT("/Game/Level/BlockoutElements/ParentActor.ParentActor_C"));
     // if (BlueprintClass)
     // {
@@ -130,6 +149,7 @@ void URenderEditorComponent::StartCountdown()
         {
             TimerRenderCounter += 1;
             this->InvokeEmissionControllerAtTime();
+            this->InvokeMediaControllerAtTime();
             UE_LOG(LogTemp, Log, TEXT("URenderEditorComponent::StartCountdown: `%i`."), TimerRenderCounter);
         }
         else
