@@ -48,7 +48,7 @@ void UMediaController::PlayPreparedMedia()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("AContentViewer::BeginPlay: MediaPlayer1 is nullptr - returnung."));
+		UE_LOG(LogTemp, Log, TEXT("AContentViewer::BeginPlay: MediaPlayer1 is nullptr - returning."));
 		return;
 	}
 
@@ -60,7 +60,7 @@ void UMediaController::PlayPreparedMedia()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("AContentViewer::BeginPlay: MediaPlayer2 is nullptr - returnung."));
+		UE_LOG(LogTemp, Log, TEXT("AContentViewer::BeginPlay: MediaPlayer2 is nullptr - returning."));
 		return;
 	}
 }

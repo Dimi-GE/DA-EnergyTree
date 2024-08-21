@@ -35,16 +35,7 @@ public:
     UMediaPlayer* MediaPlayer1;
 
 	UPROPERTY(EditAnywhere, Category = "Media")
-    UMediaPlayer* MediaPlayer2;
-
-	UPROPERTY(EditAnywhere, Category = "Media")
     UFileMediaSource* MediaSource1;
-
-	UPROPERTY(EditAnywhere, Category = "Media")
-    UFileMediaSource* MediaSource2;
-
-	// UPROPERTY(VisibleAnywhere, Category = "Content Viewer Defaults")
-	// UWidgetComponent* ViewerComponent;
 
 	UPROPERTY(VisibleAnywhere, Category = "Content Viewer Defaults")
 	ACineCameraActor* ParentActor;
@@ -61,39 +52,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Content Viewer Materials")
 	UMaterialInstance* OuterCircle;
 
-	// UPROPERTY(VisibleAnywhere, Category = "Content Viewer Materials Dynamic")
-	// UMaterialInstanceDynamic* SegmentedMotion_Dynamic;
+	UPROPERTY(EditAnywhere, Category = "Content Viewer Materials")
+	UMaterial* BackgroundImageMaterial;
 
-	// UPROPERTY(VisibleAnywhere, Category = "Content Viewer Materials Dynamic")
-	// UMaterialInstanceDynamic* Segmented_Dynamic;
-
-	// UPROPERTY(VisibleAnywhere, Category = "Content Viewer Materials Dynamic")
-	// UMaterialInstanceDynamic* OuterCircle_Dynamic;
-
-	// FTimerHandle SegmentedMotionAnimationHandle;
-	// FTimerHandle SegmentedCirclePercentageHandle;
-	// FTimerHandle OuterCircleAnimationHandle;
-
-
-	// float SegmentedMotionPosition = 0.0f;
-	// float SegmentedCirclePosition = 0.0f;
-	// float SegmentedPercentage = 0.0f;
-	// float OuterCirclePosition = 0.0f;
-
-	// bool bIsIncreasing = true;
-
-	// // Functions
-	// UFUNCTION(BlueprintCallable, Category = "Content Viewer Materials")
-	// void DynamicMaterialInstances_Initialization(UUMG_ContentViewer* WBPContentViewerRef, bool &bIsSucceed);
-
-	// // UFUNCTION(CallInEditor, Category = "Content Viewer Materials")
-	// void SegmentedMotionCircleAnimation();
-
-	// // UFUNCTION(CallInEditor, Category = "Content Viewer Materials")
-	// void SegmentedCirclePercentageAnimation();
-
-	// // UFUNCTION(CallInEditor, Category = "Content Viewer Materials")
-	// void OuterCircleAnimation();
+	UPROPERTY(EditAnywhere, Category = "Content Viewer Materials")
+	UMaterial* ContentImageMaterial;
 
 	// UFUNCTION(CallInEditor, Category = "Content Viewer Defaults")
 	void SetParentForSelf();
@@ -105,5 +68,5 @@ public:
 	void DetachSelfFromParent();
 
 	// UFUNCTION(CallInEditor, Category = "Media")
-	void SetUpMediaPlayers();
+	void SetUpMediaPlayer();
 };

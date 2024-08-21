@@ -7,6 +7,7 @@
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Image.h"
+#include "Components/Overlay.h"
 // Materials
 #include "Materials/MaterialInstanceDynamic.h"
 // Actors
@@ -31,7 +32,7 @@ void UUMG_ContentViewer::DynamicMaterialInstances_Initialization(const AContentV
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("UUMG_ContentViewer::DynamicMaterialInstances_Initialization: No BPContentViewerRef or SegmentMotion parent found - returning."));
+		UE_LOG(LogTemp, Warning, TEXT("UUMG_ContentViewer::DynamicMaterialInstances_Initialization: No BPContentViewerRef or SegmentMotion parent found - returning."));
         bIsSucceed = false;
 		return;
 	}
@@ -43,7 +44,7 @@ void UUMG_ContentViewer::DynamicMaterialInstances_Initialization(const AContentV
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("UUMG_ContentViewer::DynamicMaterialInstance_SegmentedMotion: No BPContentViewerRef or Segmented parent found - returning."));
+		UE_LOG(LogTemp, Warning, TEXT("UUMG_ContentViewer::DynamicMaterialInstance_SegmentedMotion: No BPContentViewerRef or Segmented parent found - returning."));
         bIsSucceed = false;
 		return;
 	}
@@ -55,7 +56,29 @@ void UUMG_ContentViewer::DynamicMaterialInstances_Initialization(const AContentV
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("UUMG_ContentViewer::DynamicMaterialInstance_SegmentedMotion: No BPContentViewerRef or Segmented parent found - returning."));
+		UE_LOG(LogTemp, Warning, TEXT("UUMG_ContentViewer::DynamicMaterialInstance_SegmentedMotion: No BPContentViewerRef or Segmented parent found - returning."));
+        bIsSucceed = false;
+		return;
+	}
+
+	if (BPContentViewerRef != nullptr && BPContentViewerRef->BackgroundImageMaterial != nullptr)
+	{
+		DI_BackgroundImage(BPContentViewerRef->BackgroundImageMaterial);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UUMG_ContentViewer::DynamicMaterialInstance_SegmentedMotion: No BPContentViewerRef or BackgroundImageMaterial found - returning."));
+        bIsSucceed = false;
+		return;
+	}
+
+	if (BPContentViewerRef != nullptr && BPContentViewerRef->ContentImageMaterial != nullptr)
+	{
+		DI_ContentImage(BPContentViewerRef->ContentImageMaterial);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UUMG_ContentViewer::DynamicMaterialInstance_SegmentedMotion: No BPContentViewerRef or ContentImageMaterial found - returning."));
         bIsSucceed = false;
 		return;
 	}
@@ -63,11 +86,64 @@ void UUMG_ContentViewer::DynamicMaterialInstances_Initialization(const AContentV
     bIsSucceed = true;
 }
 
+void UUMG_ContentViewer::MediaContent_Initialization(AContentViewer *BPContentViewerRef, bool &bIsSucceed)
+{
+	if (BPContentViewerRef != nullptr && BPContentViewerRef->MediaPlayer1 != nullptr && BPContentViewerRef->MediaSource1 != nullptr)
+	{
+		BPContentViewerRef->SetUpMediaPlayer();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UUMG_ContentViewer::DynamicMaterialInstance_SegmentedMotion: No BPContentViewerRef or ContentImageMaterial found - returning."));
+        bIsSucceed = false;
+		return;
+	}
+	bIsSucceed = true;
+}
+
 void UUMG_ContentViewer::TimersInitialization()
 {
     this->RE_OuterCircleAnimation();
     this->RE_SegmentedMotionCircleAnimation();
     this->SegmentedCirclePercentageAnimation();
+}
+
+void UUMG_ContentViewer::DI_BackgroundImage(UMaterial *ParentMaterial)
+{
+	if(ParentMaterial == nullptr)
+	{
+		UE_LOG(LogTemp, Log, TEXT("UUMG_ContentViewer::DI_BackgroundImage: No ParentMaterial found - returning."));
+		return;
+	}
+
+	BackgroundImage_Dynamic = UMaterialInstanceDynamic::Create(ParentMaterial, this);
+
+	if(!BackgroundImage_Dynamic)
+	{
+		UE_LOG(LogTemp, Log, TEXT("UUMG_ContentViewer::DI_BackgroundImage: Failed to create DynamicMaterialInstance - returning."));
+		return;
+	}
+
+	BackgroundImage->SetBrushFromMaterial(BackgroundImage_Dynamic);
+}
+
+void UUMG_ContentViewer::DI_ContentImage(UMaterial* ParentMaterial)
+{
+	if(ParentMaterial == nullptr)
+	{
+		UE_LOG(LogTemp, Log, TEXT("UUMG_ContentViewer::DI_ContentImage: No ParentMaterial found - returning."));
+		return;
+	}
+
+	ContentImage_Dynamic = UMaterialInstanceDynamic::Create(ParentMaterial, this);
+
+	if(!ContentImage_Dynamic)
+	{
+		UE_LOG(LogTemp, Log, TEXT("UUMG_ContentViewer::DI_ContentImage: Failed to create ContentImage_Dynamic - returning."));
+		return;
+	}
+
+	ContentImage->SetBrushFromMaterial(ContentImage_Dynamic);
 }
 
 void UUMG_ContentViewer::RE_SegmentedMotionCircleAnimation()
@@ -114,13 +190,16 @@ void UUMG_ContentViewer::SegmentedCirclePercentageAnimation()
 	{ 
 		if (SegmentedPercentage <= 1)
 		{
-			SegmentedPercentage += 0.0006f;
+			SegmentedPercentage += 0.0007f;
 			Segmented_Dynamic->SetScalarParameterValue("SegmentPercentage", SegmentedPercentage);
 			// UE_LOG(LogTemp, Warning, TEXT("UEmissionController::SegmentedMotionAnimation: SegmentedMotionAnimation started with SegmentedMotionPosition `%f`."), SegmentedMotionPosition);
 		}
 		else
 		{
             GetWorld()->GetTimerManager().ClearTimer(SegmentedCirclePercentageHandle);
+			GetWorld()->GetTimerManager().ClearTimer(SegmentedMotionAnimationHandle);
+			GetWorld()->GetTimerManager().ClearTimer(OuterCircleAnimationHandle);
+			Gauge_Overlay->SetVisibility(ESlateVisibility::Hidden);
             return;
 		}
 	},
@@ -168,4 +247,77 @@ void UUMG_ContentViewer::RE_OuterCircleAnimation()
 		}
 	},
 	0.01f, true);
+}
+
+void UUMG_ContentViewer::BackgroundImageFadeAnim()
+{
+	if (BackgroundImage_Dynamic == nullptr)
+	{
+		UE_LOG(LogTemp, Log, TEXT("UUMG_ContentViewer::BackgroundImageFadeAnim: No BackgroundImage_Dynamic found - returning."));
+		return;
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(BackgroundImageAnimationHandle,
+	[this]()
+	{ 
+		if (BackgroundImageOpacity < 1)
+		{
+			BackgroundImageOpacity += 0.003;
+			UE_LOG(LogTemp, Log, TEXT("UUMG_ContentViewer::BackgroundImageFadeAnim: Current Opacity value: `%f`"), BackgroundImageOpacity);
+			BackgroundImage_Dynamic->SetScalarParameterValue("Opacity", BackgroundImageOpacity);
+		}
+		else
+		{
+			GetWorld()->GetTimerManager().ClearTimer(BackgroundImageAnimationHandle);
+			return;
+		}
+	},
+	0.01f, true);
+}
+
+void UUMG_ContentViewer::ContentImageFadeAnim()
+{
+	if (ContentImage_Dynamic == nullptr)
+	{
+		UE_LOG(LogTemp, Log, TEXT("UUMG_ContentViewer::BackgroundImageFadeAnim: No BackgroundImage_Dynamic found - returning."));
+		return;
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(ContentImageAnimationHandle,
+	[this]()
+	{ 
+		if (ContentImageOpacity < 1)
+		{
+			ContentImageOpacity += 0.003;
+			UE_LOG(LogTemp, Log, TEXT("UUMG_ContentViewer::BackgroundImageFadeAnim: Current Opacity value: `%f`"), ContentImageOpacity);
+			ContentImage_Dynamic->SetScalarParameterValue("Opacity", ContentImageOpacity);
+		}
+		else
+		{
+			GetWorld()->GetTimerManager().ClearTimer(ContentImageAnimationHandle);
+			return;
+		}
+	},
+	0.01f, true);
+}
+
+void UUMG_ContentViewer::Counter()
+{
+	GetWorld()->GetTimerManager().SetTimer(CounterHandle,
+	[this]()
+	{ 
+		if (CounterValue < 30)
+		{
+			CounterValue += 1;
+			UE_LOG(LogTemp, Log, TEXT("UUMG_ContentViewer::BackgroundImageFadeAnim: Current Counter value: `%f`"), CounterValue);;
+		}
+		else
+		{
+			this->BackgroundImageFadeAnim();
+			this->ContentImageFadeAnim();
+			GetWorld()->GetTimerManager().ClearTimer(CounterHandle);
+			return;
+		}
+	},
+	1.0f, true);
 }
